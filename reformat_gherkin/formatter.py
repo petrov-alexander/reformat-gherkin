@@ -2,6 +2,7 @@ from itertools import chain, groupby
 from typing import Any, Dict, Iterator, List, Mapping, Optional, Set, Tuple, Union
 
 from attr import attrib, dataclass
+from gherkin.dialect import Dialect
 
 from .ast_node import (
     Background,
@@ -302,6 +303,10 @@ class LineGenerator:
 
         return contexts
 
+    def __keywords(self, keyword_type):
+        dialect = Dialect.for_name(self.ast.feature.language)
+        return [keyword.strip() for keyword in dialect.spec[keyword_type] if "*" not in keyword]
+
     def __find_nodes_with_newline(self) -> Set[Node]:
         """
         Find all nodes in the AST that needs a new line after it.
@@ -326,6 +331,25 @@ class LineGenerator:
             # Add an empty line after an examples table
             if isinstance(node, Examples):
                 children = list(node)
+
+            for child, next_child in zip(children, children[1:]):
+                if not isinstance(child, Step) or not isinstance(next_child, Step):
+                    continue
+
+                # Add a newline after a given block
+                given_newline_condition = (
+                        child.keyword in self.__keywords('given')
+                        and next_child.keyword not in self.__keywords('and')
+                )
+
+                # Add a newline after a when-then block
+                and_newline_condition = (
+                        child.keyword in self.__keywords('and') + self.__keywords('then')
+                        and next_child.keyword not in self.__keywords('and') + self.__keywords('then')
+                )
+
+                if given_newline_condition or and_newline_condition:
+                    nodes_with_newline.add(child)
 
             if children:
                 last_child = children[-1]
@@ -453,3 +477,5 @@ class LineGenerator:
 
     def visit_doc_string(self, docstring: DocString) -> Lines:
         yield from generate_doc_string_lines(docstring, self.indent)
+
+

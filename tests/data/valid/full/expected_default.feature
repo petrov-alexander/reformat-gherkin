@@ -16,6 +16,7 @@ Feature: Some meaningful feature
     This is a description for this scenario
 
     Given I go to the bank
+
     Then I rob the bank
 
   # Some comment here...

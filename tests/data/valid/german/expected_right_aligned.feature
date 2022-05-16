@@ -10,6 +10,7 @@ Funktionalität: Division
     Angenommen ich habe die Zahl 3 im Taschenrechner eingegeben
            Und ich habe die Taste "Division" gedrückt
            Und ich habe die Zahl 2 im Taschenrechner eingegeben
+
           Wenn ich auf die Taste "Gleich" drücke
           Dann sollte als Resultat 1,5 am Bildschirm ausgegeben werden
 
